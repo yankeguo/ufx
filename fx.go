@@ -7,6 +7,8 @@ var Module = fx.Module(
 	fx.Provide(
 		ArgsFromCommandLine,
 		NewFlagSet,
+		AsFlagSetDecoder(DecodeProbeParams),
+		NewProbe,
 	),
 	fx.Invoke(
 		ParseFlagSet,
