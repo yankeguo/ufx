@@ -8,5 +8,8 @@ var Module = fx.Module(
 		ArgsFromCommandLine,
 		NewFlagSet,
 	),
-	fx.Invoke(ParseFlagSet),
+	fx.Invoke(
+		ParseFlagSet,
+		SetupOTEL,
+	),
 )
