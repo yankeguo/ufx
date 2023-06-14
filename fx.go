@@ -17,6 +17,6 @@ var Module = fx.Module(
 	fx.Invoke(
 		ParseFlagSet,
 		SetupOTEL,
-		Touch[Server],
+		touch[Server],
 	),
 )
