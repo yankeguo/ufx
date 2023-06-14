@@ -9,11 +9,14 @@ var Module = fx.Module(
 		NewFlagSet,
 		AsFlagSetDecoder(DecodeProbeParams),
 		AsFlagSetDecoder(DecodeRouterParams),
+		AsFlagSetDecoder(DecodeServerParams),
 		NewProbe,
 		NewRouter,
+		NewServer,
 	),
 	fx.Invoke(
 		ParseFlagSet,
 		SetupOTEL,
+		Touch[Server],
 	),
 )

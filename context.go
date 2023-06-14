@@ -17,7 +17,7 @@ import (
 
 // Bind a generic version of [Context.Bind]
 //
-// example:
+// demo:
 //
 //		func actionValidate(c summer.Context) {
 //			args := summer.Bind[struct {
@@ -202,8 +202,4 @@ func newContext(rw http.ResponseWriter, req *http.Request) *winterContext {
 		recvOnce: &sync.Once{},
 		sendOnce: &sync.Once{},
 	}
-}
-
-func NewContext(rw http.ResponseWriter, req *http.Request) Context {
-	return newContext(rw, req)
 }

@@ -8,3 +8,5 @@ type named[T any] struct {
 	Name string
 	Val  T
 }
+
+func Touch[T any](v T) {}
