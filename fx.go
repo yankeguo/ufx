@@ -8,7 +8,9 @@ var Module = fx.Module(
 		ArgsFromCommandLine,
 		NewFlagSet,
 		AsFlagSetDecoder(DecodeProbeParams),
+		AsFlagSetDecoder(DecodeRouterParams),
 		NewProbe,
+		NewRouter,
 	),
 	fx.Invoke(
 		ParseFlagSet,

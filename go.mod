@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/go-logr/logr v1.2.4
+	github.com/guoyk93/rg v1.0.0
 	github.com/peterbourgon/ff/v3 v3.3.2
 	github.com/stretchr/testify v1.8.4
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.42.0
@@ -11,6 +12,7 @@ require (
 	go.opentelemetry.io/otel v1.16.0
 	go.opentelemetry.io/otel/exporters/zipkin v1.16.0
 	go.opentelemetry.io/otel/sdk v1.16.0
+	go.opentelemetry.io/otel/trace v1.16.0
 	go.uber.org/fx v1.20.0
 )
 
@@ -21,7 +23,6 @@ require (
 	github.com/openzipkin/zipkin-go v0.4.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	go.opentelemetry.io/otel/metric v1.16.0 // indirect
-	go.opentelemetry.io/otel/trace v1.16.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/dig v1.17.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
