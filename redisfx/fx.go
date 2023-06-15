@@ -12,7 +12,12 @@ var Module = fx.Module(
 		NewOptions,
 		NewClient,
 		ufx.AsCheckerBuilder(NewClientChecker),
+	),
+)
 
+var ModuleCluster = fx.Module(
+	"ufx_redisfx_cluster",
+	fx.Provide(
 		ufx.AsFlagSetDecoder(DecodeClusterParams),
 		NewClusterOptions,
 		NewClusterClient,

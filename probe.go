@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"go.uber.org/fx"
+	"strings"
 	"sync/atomic"
 )
 
@@ -68,28 +69,30 @@ func (m *probe) CheckLiveness() bool {
 	}
 }
 
-func (m *probe) CheckReadiness(ctx context.Context) (s string, failed bool) {
+func (m *probe) CheckReadiness(ctx context.Context) (result string, ready bool) {
+	var results []string
+
+	ready = true
+
 	for _, checker := range m.checkers {
-		if len(s) > 0 {
-			s = s + "\n"
-		}
 		var (
 			name = checker.Name
 			err  = checker.Val(ctx)
 		)
-		s = s + name + ": "
 		if err == nil {
-			s = s + "OK"
+			results = append(results, name+": OK")
 		} else {
-			s = s + err.Error()
-			failed = true
+			results = append(results, name+": "+err.Error())
+			ready = false
 		}
 	}
 
-	if failed {
-		atomic.AddInt64(&m.failed, 1)
-	} else {
+	result = strings.Join(results, "\n")
+
+	if ready {
 		atomic.StoreInt64(&m.failed, 0)
+	} else {
+		atomic.AddInt64(&m.failed, 1)
 	}
 	return
 }

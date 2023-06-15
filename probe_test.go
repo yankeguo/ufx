@@ -42,20 +42,20 @@ func TestAsCheckerBuilder(t *testing.T) {
 
 	require.True(t, m.CheckLiveness())
 
-	s, failed := m.CheckReadiness(context.Background())
-	require.True(t, failed)
+	s, ready := m.CheckReadiness(context.Background())
+	require.False(t, ready)
 	require.Equal(t, "redis: test", s)
 	require.True(t, m.CheckLiveness())
 
-	s, failed = m.CheckReadiness(context.Background())
-	require.True(t, failed)
+	s, ready = m.CheckReadiness(context.Background())
+	require.False(t, ready)
 	require.Equal(t, "redis: test", s)
 	require.False(t, m.CheckLiveness())
 
 	bad = false
 
-	s, failed = m.CheckReadiness(context.Background())
-	require.False(t, failed)
+	s, ready = m.CheckReadiness(context.Background())
+	require.True(t, ready)
 	require.Equal(t, "redis: OK", s)
 	require.True(t, m.CheckLiveness())
 }
