@@ -12,5 +12,10 @@ var Module = fx.Module(
 		NewOptions,
 		NewClient,
 		ufx.AsCheckerBuilder(NewClientChecker),
+
+		ufx.AsFlagSetDecoder(DecodeClusterParams),
+		NewClusterOptions,
+		NewClusterClient,
+		ufx.AsCheckerBuilder(NewClusterClientChecker),
 	),
 )
