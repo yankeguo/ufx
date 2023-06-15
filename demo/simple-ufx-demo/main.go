@@ -1,21 +1,11 @@
 package main
 
 import (
-	"context"
 	"github.com/guoyk93/ufx"
+	"github.com/guoyk93/ufx/redisfx"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/fx"
 )
-
-func createRedisClient() *redis.Client {
-	return redis.NewClient(&redis.Options{})
-}
-
-func checkRedisClient(c *redis.Client) (string, ufx.CheckerFunc) {
-	return "redis", func(ctx context.Context) error {
-		return c.Ping(ctx).Err()
-	}
-}
 
 type app struct {
 	r *redis.Client
@@ -47,9 +37,8 @@ func appRouteSet(a *app) (string, ufx.HandlerFunc) {
 func main() {
 	fx.New(
 		ufx.Module,
+		redisfx.Module,
 		fx.Provide(
-			createRedisClient,
-			ufx.AsCheckerBuilder(checkRedisClient),
 			newApp,
 			ufx.AsRouteProvider(appRouteGet),
 			ufx.AsRouteProvider(appRouteSet),
