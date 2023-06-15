@@ -16,6 +16,8 @@ require (
 	go.opentelemetry.io/otel/sdk v1.16.0
 	go.opentelemetry.io/otel/trace v1.16.0
 	go.uber.org/fx v1.20.0
+	gorm.io/driver/mysql v1.5.1
+	gorm.io/gorm v1.25.1
 )
 
 require (
@@ -25,7 +27,10 @@ require (
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/felixge/httpsnoop v1.0.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
+	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
+	github.com/jinzhu/inflection v1.0.0 // indirect
+	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/openzipkin/zipkin-go v0.4.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
