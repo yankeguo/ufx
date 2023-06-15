@@ -3,25 +3,12 @@ package ufx
 import (
 	"flag"
 	"github.com/peterbourgon/ff/v3"
-	"go.uber.org/fx"
 	"os"
 )
 
-type flagSetDecoderResult[T any] struct {
-	fx.Out
-	JP jointPoint `group:"ufx_flagset_decoder_jointpoints"`
-
-	Value *T
-}
-
-// AsFlagSetDecoder wraps a flag set decoder function with joint points
-func AsFlagSetDecoder[T any](fn func(fset *flag.FlagSet) *T) any {
-	return func(fset *flag.FlagSet) flagSetDecoderResult[T] {
-		return flagSetDecoderResult[T]{
-			Value: fn(fset),
-		}
-	}
-}
+const (
+	guardParseFlagSet = "ufx_parse_flag_set"
+)
 
 // NewFlagSet creates a new flag set
 func NewFlagSet() *flag.FlagSet {
@@ -34,20 +21,20 @@ func NewFlagSet() *flag.FlagSet {
 	return fset
 }
 
-// ParseFlagSetOptions is the options for parsing flag set
-type ParseFlagSetOptions struct {
-	fx.In
-	JP []jointPoint `group:"ufx_flagset_decoder_jointpoints"`
-
-	FlagSet *flag.FlagSet
-	Args    Args
+// BeforeParseFlagSet wraps a flag set decoder function with joint points
+func BeforeParseFlagSet[T any](fn func(fset *flag.FlagSet) *T) any {
+	return GuardResult(guardParseFlagSet, fn)
 }
 
 // ParseFlagSet parses the flag set with ff
-func ParseFlagSet(opts ParseFlagSetOptions) error {
-	return ff.Parse(opts.FlagSet, opts.Args,
+func ParseFlagSet(fset *flag.FlagSet, args Args) error {
+	return ff.Parse(fset, args,
 		ff.WithEnvVars(),
 		ff.WithConfigFileFlag("conf"),
 		ff.WithConfigFileParser(ff.PlainParser),
 	)
+}
+
+func GuardedParseFlagSet() any {
+	return GuardParam21(guardParseFlagSet, ParseFlagSet)
 }

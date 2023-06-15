@@ -25,7 +25,7 @@ func TestNewApp(t *testing.T) {
 					return errors.New("bad")
 				}
 			}),
-			AsRouteProvider(func(r *res) (name string, rfn HandlerFunc) {
+			AsRouteBuilder(func(r *res) (name string, rfn HandlerFunc) {
 				return "/hello", func(c Context) {
 					c.Text("world")
 				}

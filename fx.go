@@ -7,16 +7,16 @@ var Module = fx.Module(
 	fx.Provide(
 		ArgsFromCommandLine,
 		NewFlagSet,
-		AsFlagSetDecoder(DecodeProbeParams),
-		AsFlagSetDecoder(DecodeRouterParams),
-		AsFlagSetDecoder(DecodeServerParams),
+		BeforeParseFlagSet(DecodeProbeParams),
+		BeforeParseFlagSet(DecodeRouterParams),
+		BeforeParseFlagSet(DecodeServerParams),
 		NewProbe,
 		NewRouter,
 		NewServer,
 	),
 	fx.Invoke(
-		ParseFlagSet,
+		GuardedParseFlagSet(),
 		SetupOTEL,
-		touch[Server],
+		Touch[Server],
 	),
 )

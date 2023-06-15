@@ -24,7 +24,7 @@ func TestAsCheckerBuilder(t *testing.T) {
 			ArgsFromCommandLine,
 			NewFlagSet,
 			NewProbe,
-			AsFlagSetDecoder(DecodeProbeParams),
+			BeforeParseFlagSet(DecodeProbeParams),
 			AsCheckerBuilder(func(v *res) (name string, cfn CheckerFunc) {
 				return "redis", func(ctx context.Context) error {
 					if bad {
@@ -35,7 +35,7 @@ func TestAsCheckerBuilder(t *testing.T) {
 			}),
 		),
 		fx.Invoke(
-			ParseFlagSet,
+			GuardedParseFlagSet(),
 		),
 		fx.Populate(&m),
 	)

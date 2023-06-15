@@ -20,16 +20,16 @@ func TestNewRouter(t *testing.T) {
 		fx.Provide(
 			ArgsFromCommandLine,
 			NewFlagSet,
-			AsFlagSetDecoder(DecodeRouterParams),
+			BeforeParseFlagSet(DecodeRouterParams),
 			NewRouter,
-			AsRouteProvider(func(r *res) (pattern string, h HandlerFunc) {
+			AsRouteBuilder(func(r *res) (pattern string, h HandlerFunc) {
 				return "/hello", func(c Context) {
 					c.Text("world")
 				}
 			}),
 		),
 		fx.Invoke(
-			ParseFlagSet,
+			GuardedParseFlagSet(),
 		),
 		fx.Populate(&m),
 	)

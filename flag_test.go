@@ -20,7 +20,7 @@ func TestParseFlagSet(t *testing.T) {
 	_ = s.String("ignore", "", "test")
 	val := s.String("hello", "", "test")
 	require.NoError(t, os.Setenv("HELLO", "WORLD"))
-	require.NoError(t, ParseFlagSet(ParseFlagSetOptions{FlagSet: s, Args: Args{"--ignore", "world"}}))
+	require.NoError(t, ParseFlagSet(s, Args{"--ignore", "world"}))
 	require.Equal(t, "WORLD", *val)
 }
 
@@ -34,13 +34,13 @@ func TestAsFlagSetDecoder(t *testing.T) {
 		fx.Supply(Args{"--hello", "world"}),
 		fx.Provide(
 			NewFlagSet,
-			AsFlagSetDecoder(func(fset *flag.FlagSet) *res {
+			BeforeParseFlagSet(func(fset *flag.FlagSet) *res {
 				r := &res{}
 				fset.StringVar(&r.hello, "hello", "", "")
 				return r
 			}),
 		),
-		fx.Invoke(ParseFlagSet),
+		fx.Invoke(GuardedParseFlagSet()),
 		fx.Populate(&r),
 	)
 

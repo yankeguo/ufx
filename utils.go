@@ -10,16 +10,13 @@ import (
 	"strings"
 )
 
-// jointPoint is a virtual type for ensuring invocation order
-type jointPoint struct{}
-
-// named arbitrary type with a name
-type named[T any] struct {
-	Name string
-	Val  T
+// Named arbitrary type with a name
+type Named[T any] struct {
+	Name  string
+	Value T
 }
 
-func touch[T any](v T) {}
+func Touch[T any](v T) {}
 
 func extractStringSlice(m map[string]any, key string, pfx string, vs []string) {
 	var v any

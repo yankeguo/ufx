@@ -8,7 +8,7 @@ import (
 var Module = fx.Module(
 	"ufx_redisfx",
 	fx.Provide(
-		ufx.AsFlagSetDecoder(DecodeParams),
+		ufx.BeforeParseFlagSet(DecodeParams),
 		NewOptions,
 		NewClient,
 		ufx.AsCheckerBuilder(NewClientChecker),
@@ -18,7 +18,7 @@ var Module = fx.Module(
 var ModuleCluster = fx.Module(
 	"ufx_redisfx_cluster",
 	fx.Provide(
-		ufx.AsFlagSetDecoder(DecodeClusterParams),
+		ufx.BeforeParseFlagSet(DecodeClusterParams),
 		NewClusterOptions,
 		NewClusterClient,
 		ufx.AsCheckerBuilder(NewClusterClientChecker),

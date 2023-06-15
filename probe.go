@@ -20,11 +20,13 @@ func DecodeProbeParams(fset *flag.FlagSet) *ProbeParams {
 
 type CheckerFunc func(ctx context.Context) error
 
-func AsCheckerBuilder[T any](fn func(v T) (name string, cfn CheckerFunc)) any {
+type CheckerBuilder[T any] func(v T) (name string, cfn CheckerFunc)
+
+func AsCheckerBuilder[T any](fn CheckerBuilder[T]) any {
 	return fx.Annotate(
-		func(v T) named[CheckerFunc] {
+		func(v T) Named[CheckerFunc] {
 			name, cfn := fn(v)
-			return named[CheckerFunc]{Name: name, Val: cfn}
+			return Named[CheckerFunc]{Name: name, Value: cfn}
 		},
 		fx.ResultTags(`group:"ufx_checkers"`),
 	)
@@ -42,7 +44,7 @@ type Probe interface {
 type probe struct {
 	*ProbeParams
 
-	checkers []named[CheckerFunc]
+	checkers []Named[CheckerFunc]
 	failed   int64
 }
 
@@ -51,7 +53,7 @@ type ProbeOptions struct {
 
 	*ProbeParams
 
-	Checkers []named[CheckerFunc] `group:"ufx_checkers"`
+	Checkers []Named[CheckerFunc] `group:"ufx_checkers"`
 }
 
 func NewProbe(opts ProbeOptions) Probe {
@@ -77,7 +79,7 @@ func (m *probe) CheckReadiness(ctx context.Context) (result string, ready bool) 
 	for _, checker := range m.checkers {
 		var (
 			name = checker.Name
-			err  = checker.Val(ctx)
+			err  = checker.Value(ctx)
 		)
 		if err == nil {
 			results = append(results, name+": OK")

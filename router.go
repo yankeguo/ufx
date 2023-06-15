@@ -9,11 +9,13 @@ import (
 // HandlerFunc handler func with [Context] as argument
 type HandlerFunc func(c Context)
 
-func AsRouteProvider[T any](fn func(v T) (pattern string, h HandlerFunc)) any {
+type RouteBuilder[T any] func(v T) (pattern string, h HandlerFunc)
+
+func AsRouteBuilder[T any](fn RouteBuilder[T]) any {
 	return fx.Annotate(
-		func(v T) named[HandlerFunc] {
+		func(v T) Named[HandlerFunc] {
 			pattern, rfn := fn(v)
-			return named[HandlerFunc]{Name: pattern, Val: rfn}
+			return Named[HandlerFunc]{Name: pattern, Value: rfn}
 		},
 		fx.ResultTags(`group:"ufx_routes"`),
 	)
@@ -60,7 +62,7 @@ type RouterOptions struct {
 
 	*RouterParams
 
-	Routes []named[HandlerFunc] `group:"ufx_routes"`
+	Routes []Named[HandlerFunc] `group:"ufx_routes"`
 }
 
 func NewRouter(opts RouterOptions) Router {
@@ -88,7 +90,7 @@ func NewRouter(opts RouterOptions) Router {
 					c.loggingRequest = opts.LoggingRequest
 					func() {
 						defer c.Perform()
-						item.Val(c)
+						item.Value(c)
 					}()
 				}),
 			),

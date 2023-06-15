@@ -40,8 +40,8 @@ func main() {
 		redisfx.Module,
 		fx.Provide(
 			newApp,
-			ufx.AsRouteProvider(appRouteGet),
-			ufx.AsRouteProvider(appRouteSet),
+			ufx.AsRouteBuilder(appRouteGet),
+			ufx.AsRouteBuilder(appRouteSet),
 		),
 	).Run()
 }
