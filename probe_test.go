@@ -18,25 +18,26 @@ func TestAsCheckerBuilder(t *testing.T) {
 	var m Probe
 
 	fx.New(
-		ReplaceArgs("-probe.readiness.cascade", "2"),
 		fx.Supply(r),
+		fx.Supply(Conf{
+			"probe": map[string]any{
+				"readiness": map[string]any{
+					"cascade": 2,
+				},
+			},
+		}),
 		fx.Provide(
-			ArgsFromCommandLine,
-			NewFlagSet,
+			NewProbeParamsFromConf,
 			NewProbe,
-			BeforeParseFlagSet(DecodeProbeParams),
-			AsCheckerBuilder(func(v *res) (name string, cfn CheckerFunc) {
-				return "redis", func(ctx context.Context) error {
-					if bad {
-						return errors.New("test")
-					}
-					return nil
+		),
+		fx.Invoke(func(v Probe) {
+			v.AddChecker("redis", func(ctx context.Context) error {
+				if bad {
+					return errors.New("test")
 				}
-			}),
-		),
-		fx.Invoke(
-			GuardedParseFlagSet(),
-		),
+				return nil
+			})
+		}),
 		fx.Populate(&m),
 	)
 

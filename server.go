@@ -2,7 +2,6 @@ package ufx
 
 import (
 	"context"
-	"flag"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/fx"
 	"net/http"
@@ -13,35 +12,24 @@ import (
 
 // ServerParams params
 type ServerParams struct {
-	// Listen listen address
-	Listen string
+	Listen string `yaml:"listen" default:":8080" validate:"required"`
 
-	// PathReadiness readiness check path
-	PathReadiness string
+	Path struct {
+		Readiness string `yaml:"readiness" default:"/debug/ready" validate:"required"`
+		Liveness  string `yaml:"liveness" default:"/debug/alive" validate:"required"`
+		Metrics   string `yaml:"metrics" default:"/debug/metrics" validate:"required"`
+	} `yaml:"path"`
 
-	// PathLiveness liveness path
-	PathLiveness string
-
-	// PathMetrics metrics path
-	PathMetrics string
-
-	// DelayStart delay start
-	DelayStart time.Duration
-
-	// DelayStop delay stop
-	DelayStop time.Duration
+	Delay struct {
+		Start time.Duration `yaml:"start" default:"3s"`
+		Stop  time.Duration `yaml:"stop" default:"3s"`
+	} `yaml:"delay"`
 }
 
-// DecodeServerParams create ServerParams from flag.FlagSet
-func DecodeServerParams(fset *flag.FlagSet) (p *ServerParams) {
-	p = &ServerParams{}
-	fset.StringVar(&p.Listen, "server.listen", ":8080", "server listen address")
-	fset.StringVar(&p.PathReadiness, "server.path.readiness", "/debug/ready", "server path readiness")
-	fset.StringVar(&p.PathLiveness, "server.path.liveness", "/debug/alive", "server path liveness")
-	fset.StringVar(&p.PathMetrics, "server.path.metrics", "/debug/metrics", "server path metrics")
-	fset.DurationVar(&p.DelayStart, "server.delay.start", time.Second*3, "server delay start")
-	fset.DurationVar(&p.DelayStop, "server.delay.stop", time.Second*3, "server delay stop")
-	return p
+// NewServerParamsFromConf create ServerParams from flag.FlagSet
+func NewServerParamsFromConf(conf Conf) (opts ServerParams, err error) {
+	err = conf.Bind(&opts, "server")
+	return
 }
 
 // Server the main interface of [summer]
@@ -51,7 +39,7 @@ type Server interface {
 }
 
 type server struct {
-	*ServerParams
+	ServerParams
 
 	Probe
 	Router
@@ -93,14 +81,14 @@ func (a *server) serveLiveness(rw http.ResponseWriter, req *http.Request) {
 
 func (a *server) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	// alive, ready, metrics
-	if req.URL.Path == a.PathReadiness {
+	if req.URL.Path == a.Path.Readiness {
 		// support readinessPath == livenessPath
 		a.serveReadiness(rw, req)
 		return
-	} else if req.URL.Path == a.PathLiveness {
+	} else if req.URL.Path == a.Path.Liveness {
 		a.serveLiveness(rw, req)
 		return
-	} else if req.URL.Path == a.PathMetrics {
+	} else if req.URL.Path == a.Path.Metrics {
 		a.hProm.ServeHTTP(rw, req)
 		return
 	}
@@ -117,11 +105,9 @@ func (a *server) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 type ServerOptions struct {
 	fx.In
-
 	fx.Lifecycle
 
-	*ServerParams
-
+	ServerParams
 	Probe
 	Router
 }
@@ -135,7 +121,7 @@ func NewServer(opts ServerOptions) Server {
 		hProm:        promhttp.Handler(),
 	}
 	if opts.Lifecycle != nil {
-		s := &http.Server{
+		hs := &http.Server{
 			Addr:    opts.Listen,
 			Handler: a,
 		}
@@ -143,20 +129,20 @@ func NewServer(opts ServerOptions) Server {
 			OnStart: func(ctx context.Context) error {
 				chErr := make(chan error, 1)
 				go func() {
-					chErr <- s.ListenAndServe()
+					chErr <- hs.ListenAndServe()
 				}()
 				select {
 				case err := <-chErr:
 					return err
 				case <-ctx.Done():
-					return s.Shutdown(ctx)
-				case <-time.After(opts.DelayStart):
+					return hs.Shutdown(ctx)
+				case <-time.After(opts.Delay.Start):
 					return nil
 				}
 			},
 			OnStop: func(ctx context.Context) error {
-				time.Sleep(opts.DelayStop)
-				return s.Shutdown(ctx)
+				time.Sleep(opts.Delay.Stop)
+				return hs.Shutdown(ctx)
 			},
 		})
 	}

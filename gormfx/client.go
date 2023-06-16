@@ -14,8 +14,8 @@ func NewClient(d gorm.Dialector, c *gorm.Config) (*gorm.DB, error) {
 	return gorm.Open(d, c)
 }
 
-func NewClientChecker(db *gorm.DB) (string, ufx.CheckerFunc) {
-	return "gorm", func(ctx context.Context) error {
+func AddCheckerForClient(db *gorm.DB, v ufx.Probe) {
+	v.AddChecker("gorm", func(ctx context.Context) error {
 		return db.WithContext(ctx).Select("SELECT 1").Error
-	}
+	})
 }

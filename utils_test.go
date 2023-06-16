@@ -8,6 +8,19 @@ import (
 	"testing"
 )
 
+type M = map[string]any
+
+func TestExtractStringSlice(t *testing.T) {
+	m := M{}
+	extractStringSlice(m, "b_", "hello", []string{"a"})
+	require.Equal(t, M{
+		"hello":         "a",
+		"hello_array":   []string{"a"},
+		"b_hello":       "a",
+		"b_hello_array": []string{"a"},
+	}, m)
+}
+
 func TestExtractRequest(t *testing.T) {
 	req := httptest.NewRequest("GET", "https://example.com/get?aaa=bbb", nil)
 

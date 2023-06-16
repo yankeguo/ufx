@@ -15,23 +15,27 @@ func newApp(r *redis.Client) *app {
 	return &app{r: r}
 }
 
-func appRouteGet(a *app) (string, ufx.HandlerFunc) {
-	return "/get", func(c ufx.Context) {
-		data := ufx.Bind[struct {
-			Key string `json:"query_key"`
-		}](c)
-		c.Text(a.r.Get(c, data.Key).Val())
-	}
+func addRoutesForApp(a *app, r ufx.Router) {
+	r.HandleFunc("/hello", func(c ufx.Context) {
+		c.Text("world")
+	})
+	r.HandleFunc("/get", a.routeGet)
+	r.HandleFunc("/set", a.routeSet)
 }
 
-func appRouteSet(a *app) (string, ufx.HandlerFunc) {
-	return "/set", func(c ufx.Context) {
-		data := ufx.Bind[struct {
-			Key string `json:"query_key"`
-			Val string `json:"query_val"`
-		}](c)
-		c.Text(a.r.Set(c, data.Key, data.Val, 0).String())
-	}
+func (a *app) routeGet(c ufx.Context) {
+	data := ufx.Bind[struct {
+		Key string `json:"query_key"`
+	}](c)
+	c.Text(a.r.Get(c, data.Key).Val())
+}
+
+func (a *app) routeSet(c ufx.Context) {
+	data := ufx.Bind[struct {
+		Key string `json:"query_key"`
+		Val string `json:"query_val"`
+	}](c)
+	c.Text(a.r.Set(c, data.Key, data.Val, 0).String())
 }
 
 func main() {
@@ -40,8 +44,7 @@ func main() {
 		redisfx.Module,
 		fx.Provide(
 			newApp,
-			ufx.AsRouteBuilder(appRouteGet),
-			ufx.AsRouteBuilder(appRouteSet),
 		),
+		fx.Invoke(addRoutesForApp),
 	).Run()
 }

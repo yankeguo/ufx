@@ -5,18 +5,14 @@ import "go.uber.org/fx"
 var Module = fx.Module(
 	"ufx",
 	fx.Provide(
-		ArgsFromCommandLine,
-		NewFlagSet,
-		BeforeParseFlagSet(DecodeProbeParams),
-		BeforeParseFlagSet(DecodeRouterParams),
-		BeforeParseFlagSet(DecodeServerParams),
+		LoadConf,
+		NewProbeParamsFromConf,
+		NewRouterParamsFromConf,
+		NewServerParamsFromConf,
 		NewProbe,
 		NewRouter,
 		NewServer,
 	),
-	fx.Invoke(
-		GuardedParseFlagSet(),
-		SetupOTEL,
-		Touch[Server],
-	),
+	fx.Invoke(SetupOTEL),
+	fx.Invoke(func(Server) {}),
 )

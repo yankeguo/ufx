@@ -15,22 +15,16 @@ func TestNewRouter(t *testing.T) {
 	var m Router
 
 	a := fx.New(
-		ReplaceArgs("-router.concurrency", "2"),
-		fx.Supply(r),
+		fx.Supply(r, Conf{}),
 		fx.Provide(
-			ArgsFromCommandLine,
-			NewFlagSet,
-			BeforeParseFlagSet(DecodeRouterParams),
+			NewRouterParamsFromConf,
 			NewRouter,
-			AsRouteBuilder(func(r *res) (pattern string, h HandlerFunc) {
-				return "/hello", func(c Context) {
-					c.Text("world")
-				}
-			}),
 		),
-		fx.Invoke(
-			GuardedParseFlagSet(),
-		),
+		fx.Invoke(func(r Router) {
+			r.HandleFunc("/hello", func(c Context) {
+				c.Text("world")
+			})
+		}),
 		fx.Populate(&m),
 	)
 	require.NoError(t, a.Err())

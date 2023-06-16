@@ -2,31 +2,29 @@ package redisfx
 
 import (
 	"context"
-	"flag"
 	"github.com/guoyk93/ufx"
 	"github.com/redis/go-redis/v9"
 )
 
 type Params struct {
-	URL string
+	URL string `yaml:"url" default:"redis://localhost:6379/0" validate:"required,url"`
 }
 
-func DecodeParams(fset *flag.FlagSet) *Params {
-	opts := &Params{}
-	fset.StringVar(&opts.URL, "redis.url", "redis://localhost:6379/0", "redis url")
-	return opts
+func DecodeParams(conf ufx.Conf) (params Params, err error) {
+	err = conf.Bind(&params, "redis")
+	return
 }
 
-func NewOptions(p *Params) (*redis.Options, error) {
-	return redis.ParseURL(p.URL)
+func NewOptions(params Params) (*redis.Options, error) {
+	return redis.ParseURL(params.URL)
 }
 
 func NewClient(opts *redis.Options) *redis.Client {
 	return redis.NewClient(opts)
 }
 
-func NewClientChecker(client *redis.Client) (string, ufx.CheckerFunc) {
-	return "redis", func(ctx context.Context) error {
+func AddCheckerForClient(client *redis.Client, v ufx.Probe) {
+	v.AddChecker("redis", func(ctx context.Context) error {
 		return client.Ping(ctx).Err()
-	}
+	})
 }

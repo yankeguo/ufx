@@ -1,26 +1,25 @@
 package redisfx
 
 import (
-	"github.com/guoyk93/ufx"
 	"go.uber.org/fx"
 )
 
 var Module = fx.Module(
 	"ufx_redisfx",
 	fx.Provide(
-		ufx.BeforeParseFlagSet(DecodeParams),
+		DecodeParams,
 		NewOptions,
 		NewClient,
-		ufx.AsCheckerBuilder(NewClientChecker),
 	),
+	fx.Invoke(AddCheckerForClient),
 )
 
 var ModuleCluster = fx.Module(
 	"ufx_redisfx_cluster",
 	fx.Provide(
-		ufx.BeforeParseFlagSet(DecodeClusterParams),
+		DecodeClusterParams,
 		NewClusterOptions,
 		NewClusterClient,
-		ufx.AsCheckerBuilder(NewClusterClientChecker),
 	),
+	fx.Invoke(AddCheckerForClusterClient),
 )

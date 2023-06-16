@@ -10,15 +10,7 @@ import (
 	"strings"
 )
 
-// Named arbitrary type with a name
-type Named[T any] struct {
-	Name  string
-	Value T
-}
-
-func Touch[T any](v T) {}
-
-func extractStringSlice(m map[string]any, key string, pfx string, vs []string) {
+func extractStringSlice(m map[string]any, pfx string, key string, vs []string) {
 	var v any
 	if len(vs) == 1 {
 		v = vs[0]
@@ -27,20 +19,22 @@ func extractStringSlice(m map[string]any, key string, pfx string, vs []string) {
 	}
 	m[key] = v
 	m[key+"_array"] = vs
-	m[pfx+key] = v
-	m[pfx+key+"_array"] = vs
+	if pfx != "" {
+		m[pfx+key] = v
+		m[pfx+key+"_array"] = vs
+	}
 }
 
 func extractRequest(m map[string]any, f map[string][]*multipart.FileHeader, req *http.Request) (err error) {
 	// header
 	for k, vs := range req.Header {
 		k = strings.ToLower(strings.ReplaceAll(k, "-", "_"))
-		extractStringSlice(m, k, "header_", vs)
+		extractStringSlice(m, "header_", k, vs)
 	}
 
 	// query
 	for k, vs := range req.URL.Query() {
-		extractStringSlice(m, k, "query_", vs)
+		extractStringSlice(m, "query_", k, vs)
 	}
 
 	// body
@@ -75,14 +69,14 @@ func extractRequest(m map[string]any, f map[string][]*multipart.FileHeader, req 
 			return
 		}
 		for k, vs := range q {
-			extractStringSlice(m, k, "form_", vs)
+			extractStringSlice(m, "form_", k, vs)
 		}
 	case ContentTypeMultipart:
 		if err = req.ParseMultipartForm(1024 * 1024 * 10); err != nil {
 			return
 		}
 		for k, vs := range req.MultipartForm.Value {
-			extractStringSlice(m, k, "form_", vs)
+			extractStringSlice(m, "form_", k, vs)
 		}
 		for k, v := range req.MultipartForm.File {
 			f[k] = v

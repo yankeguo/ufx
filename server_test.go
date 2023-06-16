@@ -16,21 +16,25 @@ func TestNewApp(t *testing.T) {
 	var app Server
 
 	a := fx.New(
-		Module,
-		fx.Supply(r),
-		ReplaceArgs("--server.path.metrics", "/metrics"),
+		fx.Supply(r, Conf{}),
 		fx.Provide(
-			AsCheckerBuilder(func(r *res) (name string, cfn CheckerFunc) {
-				return "hello", func(ctx context.Context) error {
-					return errors.New("bad")
-				}
-			}),
-			AsRouteBuilder(func(r *res) (name string, rfn HandlerFunc) {
-				return "/hello", func(c Context) {
-					c.Text("world")
-				}
-			}),
+			NewProbeParamsFromConf,
+			NewRouterParamsFromConf,
+			NewServerParamsFromConf,
+			NewProbe,
+			NewRouter,
+			NewServer,
 		),
+		fx.Invoke(func(r Router) {
+			r.HandleFunc("/hello", func(c Context) {
+				c.Text("world")
+			})
+		}),
+		fx.Invoke(func(v Probe) {
+			v.AddChecker("hello", func(ctx context.Context) error {
+				return errors.New("bad")
+			})
+		}),
 		fx.Populate(&app),
 	)
 

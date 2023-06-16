@@ -1,21 +1,20 @@
 package gormfx
 
 import (
-	"flag"
+	"github.com/guoyk93/ufx"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
 type MySQLParams struct {
-	DSN string
+	DSN string `yaml:"dsn" default:"root:root@tcp(localhost:3306)/test?charset=utf8mb4&parseTime=True&loc=Local" validate:"required"`
 }
 
-func DecodeMySQLParams(fset *flag.FlagSet) *MySQLParams {
-	p := &MySQLParams{}
-	fset.StringVar(&p.DSN, "mysql.dsn", "root:root@tcp(127.0.0.3:3306)/test?charset=utf8mb4&parseTime=True&loc=Local", "mysql dsn")
-	return p
+func DecodeMySQLParams(conf ufx.Conf) (params MySQLParams, err error) {
+	err = conf.Bind(&params, "mysql")
+	return
 }
 
-func NewMySQLDialector(p *MySQLParams) gorm.Dialector {
-	return mysql.Open(p.DSN)
+func NewMySQLDialector(params MySQLParams) gorm.Dialector {
+	return mysql.Open(params.DSN)
 }

@@ -2,35 +2,11 @@ package ufx
 
 import (
 	"context"
-	"flag"
-	"go.uber.org/fx"
 	"strings"
 	"sync/atomic"
 )
 
-type ProbeParams struct {
-	ReadinessCascade int64
-}
-
-func DecodeProbeParams(fset *flag.FlagSet) *ProbeParams {
-	p := &ProbeParams{}
-	fset.Int64Var(&p.ReadinessCascade, "probe.readiness.cascade", 5, "checker cascade")
-	return p
-}
-
 type CheckerFunc func(ctx context.Context) error
-
-type CheckerBuilder[T any] func(v T) (name string, cfn CheckerFunc)
-
-func AsCheckerBuilder[T any](fn CheckerBuilder[T]) any {
-	return fx.Annotate(
-		func(v T) Named[CheckerFunc] {
-			name, cfn := fn(v)
-			return Named[CheckerFunc]{Name: name, Value: cfn}
-		},
-		fx.ResultTags(`group:"ufx_checkers"`),
-	)
-}
 
 // Probe is a check probe
 type Probe interface {
@@ -39,33 +15,43 @@ type Probe interface {
 
 	// CheckReadiness check readiness
 	CheckReadiness(ctx context.Context) (s string, failed bool)
+
+	// AddChecker add checker
+	AddChecker(name string, fn CheckerFunc)
+}
+
+type probeItem struct {
+	name string
+	fn   CheckerFunc
+}
+
+type ProbeParams struct {
+	Readiness struct {
+		Cascade int `yaml:"cascade" default:"5" validate:"min=1"`
+	} `yaml:"readiness"`
+}
+
+func NewProbeParamsFromConf(conf Conf) (params ProbeParams, err error) {
+	err = conf.Bind(&params, "probe")
+	return
 }
 
 type probe struct {
-	*ProbeParams
+	ProbeParams
 
-	checkers []Named[CheckerFunc]
+	checkers []probeItem
 	failed   int64
 }
 
-type ProbeOptions struct {
-	fx.In
-
-	*ProbeParams
-
-	Checkers []Named[CheckerFunc] `group:"ufx_checkers"`
-}
-
-func NewProbe(opts ProbeOptions) Probe {
+func NewProbe(params ProbeParams) Probe {
 	return &probe{
-		checkers:    opts.Checkers,
-		ProbeParams: opts.ProbeParams,
+		ProbeParams: params,
 	}
 }
 
 func (m *probe) CheckLiveness() bool {
-	if m.ReadinessCascade > 0 {
-		return m.failed < m.ReadinessCascade
+	if m.Readiness.Cascade > 0 {
+		return m.failed < int64(m.Readiness.Cascade)
 	} else {
 		return true
 	}
@@ -78,8 +64,8 @@ func (m *probe) CheckReadiness(ctx context.Context) (result string, ready bool) 
 
 	for _, checker := range m.checkers {
 		var (
-			name = checker.Name
-			err  = checker.Value(ctx)
+			name = checker.name
+			err  = checker.fn(ctx)
 		)
 		if err == nil {
 			results = append(results, name+": OK")
@@ -97,4 +83,8 @@ func (m *probe) CheckReadiness(ctx context.Context) (result string, ready bool) 
 		atomic.AddInt64(&m.failed, 1)
 	}
 	return
+}
+
+func (m *probe) AddChecker(name string, fn CheckerFunc) {
+	m.checkers = append(m.checkers, probeItem{name: name, fn: fn})
 }
