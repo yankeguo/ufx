@@ -19,7 +19,7 @@ func TestReplaceArgs(t *testing.T) {
 	var args Args
 	fx.New(
 		fx.Provide(ArgsFromCommandLine),
-		ReplaceArgs([]string{"-hello", "world"}),
+		ReplaceArgs("-hello", "world"),
 		fx.Populate(&args),
 	)
 	require.NotEmpty(t, args)

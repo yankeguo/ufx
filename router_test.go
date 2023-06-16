@@ -15,7 +15,7 @@ func TestNewRouter(t *testing.T) {
 	var m Router
 
 	a := fx.New(
-		ReplaceArgs([]string{"-router.concurrency", "2"}),
+		ReplaceArgs("-router.concurrency", "2"),
 		fx.Supply(r),
 		fx.Provide(
 			ArgsFromCommandLine,

@@ -18,7 +18,7 @@ func TestNewApp(t *testing.T) {
 	a := fx.New(
 		Module,
 		fx.Supply(r),
-		ReplaceArgs([]string{"--server.path.metrics", "/metrics"}),
+		ReplaceArgs("--server.path.metrics", "/metrics"),
 		fx.Provide(
 			AsCheckerBuilder(func(r *res) (name string, cfn CheckerFunc) {
 				return "hello", func(ctx context.Context) error {

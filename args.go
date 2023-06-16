@@ -9,8 +9,8 @@ import (
 type Args []string
 
 // ReplaceArgs override the command-line arguments for Fx
-func ReplaceArgs(v []string) fx.Option {
-	return fx.Replace(Args(v))
+func ReplaceArgs(args ...string) fx.Option {
+	return fx.Replace(Args(args))
 }
 
 // ArgsFromCommandLine loads the flag set args from command-line arguments

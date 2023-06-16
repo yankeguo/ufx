@@ -7,6 +7,6 @@ import (
 )
 
 func TestModule(t *testing.T) {
-	app := fx.New(Module, ReplaceArgs([]string{}))
+	app := fx.New(Module, ReplaceArgs())
 	require.NoError(t, app.Err())
 }

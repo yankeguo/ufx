@@ -18,7 +18,7 @@ func TestAsCheckerBuilder(t *testing.T) {
 	var m Probe
 
 	fx.New(
-		ReplaceArgs([]string{"-probe.readiness.cascade", "2"}),
+		ReplaceArgs("-probe.readiness.cascade", "2"),
 		fx.Supply(r),
 		fx.Provide(
 			ArgsFromCommandLine,
