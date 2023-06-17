@@ -27,8 +27,8 @@ type probeItem struct {
 
 type ProbeParams struct {
 	Readiness struct {
-		Cascade int `yaml:"cascade" default:"5" validate:"min=1"`
-	} `yaml:"readiness"`
+		Cascade int `json:"cascade" default:"5" validate:"min=1"`
+	} `json:"readiness"`
 }
 
 func NewProbeParamsFromConf(conf Conf) (params ProbeParams, err error) {

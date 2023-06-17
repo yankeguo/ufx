@@ -7,6 +7,6 @@ import (
 )
 
 func TestModule(t *testing.T) {
-	app := fx.New(Module)
+	app := fx.New(Module, ProvideEmptyConf())
 	require.NoError(t, app.Err())
 }

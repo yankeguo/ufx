@@ -51,11 +51,11 @@ func (r *router) HandleFunc(pattern string, fn HandlerFunc) {
 }
 
 type RouterParams struct {
-	Concurrency int `yaml:"concurrency" default:"128" validate:"min=1"`
+	Concurrency int `json:"concurrency" default:"128" validate:"min=1"`
 	Logging     struct {
-		Response bool `yaml:"response"`
-		Request  bool `yaml:"request"`
-	} `yaml:"logging"`
+		Response bool `json:"response"`
+		Request  bool `json:"request"`
+	} `json:"logging"`
 }
 
 func NewRouterParamsFromConf(conf Conf) (params RouterParams, err error) {

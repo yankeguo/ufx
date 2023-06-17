@@ -7,7 +7,7 @@ import (
 )
 
 type MySQLParams struct {
-	DSN string `yaml:"dsn" default:"root:root@tcp(localhost:3306)/test?charset=utf8mb4&parseTime=True&loc=Local" validate:"required"`
+	DSN string `json:"dsn" default:"root:root@tcp(localhost:3306)/test?charset=utf8mb4&parseTime=True&loc=Local" validate:"required"`
 }
 
 func DecodeMySQLParams(conf ufx.Conf) (params MySQLParams, err error) {

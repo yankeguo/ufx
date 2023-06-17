@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/creasty/defaults"
 	"github.com/go-playground/validator/v10"
+	"go.uber.org/fx"
 	"gopkg.in/yaml.v3"
 	"os"
 	"strings"
@@ -18,12 +19,16 @@ func (c Conf) Bind(data interface{}, keys ...string) (err error) {
 	m := map[string]any(c)
 
 	for _, key := range keys {
-		var ok bool
-		if m, ok = m[key].(map[string]any); !ok {
-			if m == nil {
-				m = map[string]any{}
-				break
-			} else {
+		if v := m[key]; v == nil {
+			m = map[string]any{}
+			break
+		} else {
+			switch v.(type) {
+			case map[string]any:
+				m = v.(map[string]any)
+			case Conf:
+				m = v.(Conf)
+			default:
 				err = errors.New("ufx.Conf#Bind: invalid key: " + strings.Join(keys, "."))
 				return
 			}
@@ -46,16 +51,19 @@ func (c Conf) Bind(data interface{}, keys ...string) (err error) {
 	return err
 }
 
-func LoadConf() (c Conf, err error) {
-	var buf []byte
-	if buf, err = os.ReadFile("config.yaml"); err != nil {
-		if os.IsNotExist(err) {
-			err = nil
+func ProvideEmptyConf() fx.Option {
+	return fx.Provide(func() Conf { return Conf{} })
+}
+
+func ProvideConfFromYAMLFile(name string) fx.Option {
+	return fx.Provide(func() (conf Conf, err error) {
+		var buf []byte
+		if buf, err = os.ReadFile(name); err != nil {
+			return
+		}
+		if err = yaml.Unmarshal(buf, &conf); err != nil {
+			return
 		}
 		return
-	}
-	if err = yaml.Unmarshal(buf, &c); err != nil {
-		return
-	}
-	return
+	})
 }

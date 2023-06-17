@@ -12,18 +12,18 @@ import (
 
 // ServerParams params
 type ServerParams struct {
-	Listen string `yaml:"listen" default:":8080" validate:"required"`
+	Listen string `json:"listen" default:":8080" validate:"required"`
 
 	Path struct {
-		Readiness string `yaml:"readiness" default:"/debug/ready" validate:"required"`
-		Liveness  string `yaml:"liveness" default:"/debug/alive" validate:"required"`
-		Metrics   string `yaml:"metrics" default:"/debug/metrics" validate:"required"`
-	} `yaml:"path"`
+		Readiness string `json:"readiness" default:"/debug/ready" validate:"required"`
+		Liveness  string `json:"liveness" default:"/debug/alive" validate:"required"`
+		Metrics   string `json:"metrics" default:"/debug/metrics" validate:"required"`
+	} `json:"path"`
 
 	Delay struct {
-		Start time.Duration `yaml:"start" default:"3s"`
-		Stop  time.Duration `yaml:"stop" default:"3s"`
-	} `yaml:"delay"`
+		Start time.Duration `json:"start" default:"3s"`
+		Stop  time.Duration `json:"stop" default:"3s"`
+	} `json:"delay"`
 }
 
 // NewServerParamsFromConf create ServerParams from flag.FlagSet

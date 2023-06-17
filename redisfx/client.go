@@ -4,14 +4,17 @@ import (
 	"context"
 	"github.com/guoyk93/ufx"
 	"github.com/redis/go-redis/v9"
+	"log"
 )
 
 type Params struct {
-	URL string `yaml:"url" default:"redis://localhost:6379/0" validate:"required,url"`
+	URL string `json:"url" default:"redis://localhost:6379/0" validate:"required,url"`
 }
 
 func DecodeParams(conf ufx.Conf) (params Params, err error) {
+	log.Println(conf)
 	err = conf.Bind(&params, "redis")
+	log.Println(params)
 	return
 }
 

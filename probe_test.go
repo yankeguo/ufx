@@ -19,13 +19,15 @@ func TestAsCheckerBuilder(t *testing.T) {
 
 	fx.New(
 		fx.Supply(r),
-		fx.Supply(Conf{
-			"probe": map[string]any{
-				"readiness": map[string]any{
-					"cascade": 2,
+		fx.Supply(Conf(
+			map[string]any{
+				"probe": map[string]any{
+					"readiness": map[string]any{
+						"cascade": 2,
+					},
 				},
 			},
-		}),
+		)),
 		fx.Provide(
 			NewProbeParamsFromConf,
 			NewProbe,

@@ -7,7 +7,7 @@ import (
 )
 
 type ClusterParams struct {
-	URL string `yaml:"url"`
+	URL string `json:"url"`
 }
 
 func DecodeClusterParams(conf ufx.Conf) (params ClusterParams, err error) {
