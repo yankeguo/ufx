@@ -5,7 +5,6 @@ import (
 	"github.com/guoyk93/ufx/redisfx"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/fx"
-	"log"
 )
 
 type app struct {
@@ -39,18 +38,14 @@ func (a *app) routeSet(c ufx.Context) {
 	c.Text(a.r.Set(c, data.Key, data.Val, 0).String())
 }
 
-func logConf(conf ufx.Conf) {
-	log.Println(conf)
-}
-
 func main() {
 	fx.New(
+		ufx.ProvideEmptyConf(),
 		ufx.Module,
 		redisfx.Module,
 		fx.Provide(
 			newApp,
 		),
 		fx.Invoke(addRoutesForApp),
-		fx.Invoke(logConf),
 	).Run()
 }

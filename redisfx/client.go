@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/guoyk93/ufx"
 	"github.com/redis/go-redis/v9"
-	"log"
 )
 
 type Params struct {
@@ -12,9 +11,7 @@ type Params struct {
 }
 
 func DecodeParams(conf ufx.Conf) (params Params, err error) {
-	log.Println(conf)
 	err = conf.Bind(&params, "redis")
-	log.Println(params)
 	return
 }
 
