@@ -17,7 +17,7 @@ func TestNewRouter(t *testing.T) {
 	a := fx.New(
 		fx.Supply(r, Conf{}),
 		fx.Provide(
-			NewRouterParamsFromConf,
+			RouterParamsFromConf,
 			NewRouter,
 		),
 		fx.Invoke(func(r Router) {

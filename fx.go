@@ -5,10 +5,10 @@ import "go.uber.org/fx"
 var Module = fx.Module(
 	"ufx",
 	fx.Provide(
-		NewProbeParamsFromConf,
-		NewRouterParamsFromConf,
-		NewServerParamsFromConf,
-		NewProbe,
+		ProberParamsFromConf,
+		RouterParamsFromConf,
+		ServerParamsFromConf,
+		NewProber,
 		NewRouter,
 		NewServer,
 	),

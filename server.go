@@ -26,8 +26,8 @@ type ServerParams struct {
 	} `json:"delay"`
 }
 
-// NewServerParamsFromConf create ServerParams from flag.FlagSet
-func NewServerParamsFromConf(conf Conf) (opts ServerParams, err error) {
+// ServerParamsFromConf create ServerParams from flag.FlagSet
+func ServerParamsFromConf(conf Conf) (opts ServerParams, err error) {
 	err = conf.Bind(&opts, "server")
 	return
 }
@@ -41,7 +41,7 @@ type Server interface {
 type server struct {
 	ServerParams
 
-	Probe
+	Prober
 	Router
 
 	hProm http.Handler
@@ -108,7 +108,7 @@ type ServerOptions struct {
 	fx.Lifecycle
 
 	ServerParams
-	Probe
+	Prober
 	Router
 }
 
@@ -116,7 +116,7 @@ type ServerOptions struct {
 func NewServer(opts ServerOptions) Server {
 	a := &server{
 		ServerParams: opts.ServerParams,
-		Probe:        opts.Probe,
+		Prober:       opts.Prober,
 		Router:       opts.Router,
 		hProm:        promhttp.Handler(),
 	}

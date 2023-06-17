@@ -58,7 +58,7 @@ type RouterParams struct {
 	} `json:"logging"`
 }
 
-func NewRouterParamsFromConf(conf Conf) (params RouterParams, err error) {
+func RouterParamsFromConf(conf Conf) (params RouterParams, err error) {
 	err = conf.Bind(&params, "router")
 	return
 }

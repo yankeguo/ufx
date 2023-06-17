@@ -15,13 +15,13 @@ func TestAsCheckerBuilder(t *testing.T) {
 
 	bad := true
 
-	var m Probe
+	var m Prober
 
 	fx.New(
 		fx.Supply(r),
 		fx.Supply(Conf(
 			map[string]any{
-				"probe": map[string]any{
+				"prober": map[string]any{
 					"readiness": map[string]any{
 						"cascade": 2,
 					},
@@ -29,10 +29,10 @@ func TestAsCheckerBuilder(t *testing.T) {
 			},
 		)),
 		fx.Provide(
-			NewProbeParamsFromConf,
-			NewProbe,
+			ProberParamsFromConf,
+			NewProber,
 		),
-		fx.Invoke(func(v Probe) {
+		fx.Invoke(func(v Prober) {
 			v.AddChecker("redis", func(ctx context.Context) error {
 				if bad {
 					return errors.New("test")
