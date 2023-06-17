@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/guoyk93/halt"
 	"github.com/guoyk93/rg"
-	"github.com/guoyk93/ufx/halt"
 	"go.opentelemetry.io/otel/trace"
 	"log"
 	"mime/multipart"
@@ -187,8 +187,8 @@ func (c *winterContext) Perform() {
 		if e, ok = r.(error); !ok {
 			e = fmt.Errorf("panic: %v", r)
 		}
-		c.Code(halt.StatusCodeFromError(e))
-		c.JSON(halt.ExtrasFromError(e))
+		c.Code(halt.GetStatusCode(e))
+		c.JSON(halt.GetExtras(e))
 		c.loggingResponse = true
 	}
 	c.sendOnce.Do(c.send)

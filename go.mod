@@ -6,6 +6,7 @@ require (
 	github.com/creasty/defaults v1.7.0
 	github.com/go-logr/logr v1.2.4
 	github.com/go-playground/validator/v10 v10.14.1
+	github.com/guoyk93/halt v0.0.0-20230617055325-da8787b278da
 	github.com/guoyk93/rg v1.0.0
 	github.com/prometheus/client_golang v1.15.1
 	github.com/stretchr/testify v1.8.4

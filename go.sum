@@ -31,6 +31,8 @@ github.com/golang/protobuf v1.5.3 h1:KhyjKVUg7Usr/dYsdSqoFveMYd5ko72D+zANwlG1mmg
 github.com/golang/protobuf v1.5.3/go.mod h1:XVQd3VNwM+JqD3oG2Ue2ip4fOMUkwXdXDdiuN0vRsmY=
 github.com/google/go-cmp v0.5.5/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/google/go-cmp v0.5.9 h1:O2Tfq5qg4qc4AmwVlvv0oLiVAGB7enBSJ2x2DqQFi38=
+github.com/guoyk93/halt v0.0.0-20230617055325-da8787b278da h1:Iu4mZJv67lAtV2O2qo0F0rHVHyj/1gydYVOc1MYIagM=
+github.com/guoyk93/halt v0.0.0-20230617055325-da8787b278da/go.mod h1:zY5fcbnuR82zn4q50Mc2CqPUiO4EIfZxCyi/2eOiF1w=
 github.com/guoyk93/rg v1.0.0 h1:Aydtyx7ioyUER2SLnmkfxPcmFOp7CUhTmF1kgBInc+4=
 github.com/guoyk93/rg v1.0.0/go.mod h1:tLaoLk8bo/PQld1xGvJvAfCl3K0Nckzh0gsnykFoQYg=
 github.com/kr/pretty v0.3.1 h1:flRD4NNwYAUpkphVc1HcthR4KEIFJ65n8Mw5qdRn3LE=
