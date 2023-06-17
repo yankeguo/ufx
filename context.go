@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/guoyk93/halt"
-	"github.com/guoyk93/rg"
 	"go.opentelemetry.io/otel/trace"
 	"log"
 	"mime/multipart"
@@ -127,12 +126,17 @@ func (c *winterContext) Header() http.Header {
 }
 
 func (c *winterContext) receive() {
-	var m = map[string]any{}
-	var f = map[string][]*multipart.FileHeader{}
-	if err := extractRequest(m, f, c.req); err != nil {
+	var (
+		m   = map[string]any{}
+		f   = map[string][]*multipart.FileHeader{}
+		err error
+	)
+	if err = extractRequest(m, f, c.req); err != nil {
 		halt.Error(err, halt.WithStatusCode(http.StatusBadRequest))
 	}
-	c.buf = rg.Must(json.Marshal(m))
+	if c.buf, err = json.Marshal(m); err != nil {
+		halt.Error(err, halt.WithStatusCode(http.StatusBadRequest))
+	}
 	c.files = f
 }
 
@@ -150,7 +154,9 @@ func (c *winterContext) send() {
 
 func (c *winterContext) Bind(data interface{}) {
 	c.recvOnce.Do(c.receive)
-	rg.Must0(json.Unmarshal(c.buf, data))
+	if err := json.Unmarshal(c.buf, data); err != nil {
+		halt.Error(err, halt.WithStatusCode(http.StatusBadRequest))
+	}
 }
 
 func (c *winterContext) Files() map[string][]*multipart.FileHeader {
@@ -174,8 +180,11 @@ func (c *winterContext) Text(s string) {
 }
 
 func (c *winterContext) JSON(data interface{}) {
-	buf := rg.Must(json.Marshal(data))
-	c.Body(ContentTypeApplicationJSONUTF8, buf)
+	if buf, err := json.Marshal(data); err != nil {
+		halt.Error(err, halt.WithStatusCode(http.StatusBadRequest))
+	} else {
+		c.Body(ContentTypeApplicationJSONUTF8, buf)
+	}
 }
 
 func (c *winterContext) Perform() {
