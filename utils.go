@@ -10,31 +10,36 @@ import (
 	"strings"
 )
 
-func extractStringSlice(m map[string]any, pfx string, key string, vs []string) {
+// extractStringSlice extracts string slice into map with optional prefix
+func extractStringSlice(out map[string]any, pfx string, key string, vals []string) {
 	var v any
-	if len(vs) == 1 {
-		v = vs[0]
+	if len(vals) == 1 {
+		v = vals[0]
 	} else {
-		v = vs
+		v = vals
 	}
-	m[key] = v
-	m[key+"_array"] = vs
+	out[key] = v
+	out[key+"_array"] = vals
 	if pfx != "" {
-		m[pfx+key] = v
-		m[pfx+key+"_array"] = vs
+		out[pfx+key] = v
+		out[pfx+key+"_array"] = vals
 	}
 }
 
-func extractRequest(m map[string]any, f map[string][]*multipart.FileHeader, req *http.Request) (err error) {
+// extractRequest extracts request data into map
+func extractRequest(out map[string]any, fOut map[string][]*multipart.FileHeader, req *http.Request) (err error) {
+	// host is not included in headers by default
+	extractStringSlice(out, "header_", "host", []string{req.Host})
+
 	// header
-	for k, vs := range req.Header {
-		k = strings.ToLower(strings.ReplaceAll(k, "-", "_"))
-		extractStringSlice(m, "header_", k, vs)
+	for key, vals := range req.Header {
+		key = strings.ToLower(strings.ReplaceAll(key, "-", "_"))
+		extractStringSlice(out, "header_", key, vals)
 	}
 
 	// query
-	for k, vs := range req.URL.Query() {
-		extractStringSlice(m, "query_", k, vs)
+	for key, vals := range req.URL.Query() {
+		extractStringSlice(out, "query_", key, vals)
 	}
 
 	// body
@@ -54,35 +59,35 @@ func extractRequest(m map[string]any, f map[string][]*multipart.FileHeader, req 
 
 	switch contentType {
 	case ContentTypeTextPlain:
-		m["body"] = string(buf)
+		out["body"] = string(buf)
 	case ContentTypeApplicationJSON:
-		var j map[string]any
-		if err = json.Unmarshal(buf, &j); err != nil {
+		var data map[string]any
+		if err = json.Unmarshal(buf, &data); err != nil {
 			return
 		}
-		for k, v := range j {
-			m[k] = v
+		for key, val := range data {
+			out[key] = val
 		}
 	case ContentTypeFormURLEncoded:
-		var q url.Values
-		if q, err = url.ParseQuery(string(buf)); err != nil {
+		var query url.Values
+		if query, err = url.ParseQuery(string(buf)); err != nil {
 			return
 		}
-		for k, vs := range q {
-			extractStringSlice(m, "form_", k, vs)
+		for key, vals := range query {
+			extractStringSlice(out, "form_", key, vals)
 		}
 	case ContentTypeMultipart:
 		if err = req.ParseMultipartForm(1024 * 1024 * 10); err != nil {
 			return
 		}
-		for k, vs := range req.MultipartForm.Value {
-			extractStringSlice(m, "form_", k, vs)
+		for key, vals := range req.MultipartForm.Value {
+			extractStringSlice(out, "form_", key, vals)
 		}
-		for k, v := range req.MultipartForm.File {
-			f[k] = v
+		for key, file := range req.MultipartForm.File {
+			fOut[key] = file
 		}
 	default:
-		m["body"] = buf
+		out["body"] = buf
 		return
 	}
 

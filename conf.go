@@ -51,10 +51,12 @@ func (c Conf) Bind(data interface{}, keys ...string) (err error) {
 	return err
 }
 
+// ProvideEmptyConf provides an empty Conf
 func ProvideEmptyConf() fx.Option {
 	return fx.Provide(func() Conf { return Conf{} })
 }
 
+// ProvideConfFromYAMLFile provides a Conf from a YAML file
 func ProvideConfFromYAMLFile(name string) fx.Option {
 	return fx.Provide(func() (conf Conf, err error) {
 		var buf []byte
