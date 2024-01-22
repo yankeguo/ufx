@@ -1,10 +1,13 @@
 package ufx
 
 import (
+	"net/http/httptest"
+	"os"
+	"path/filepath"
+	"testing"
+
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
-	"net/http/httptest"
-	"testing"
 )
 
 func TestNewRouter(t *testing.T) {
@@ -21,6 +24,8 @@ func TestNewRouter(t *testing.T) {
 			NewRouter,
 		),
 		fx.Invoke(func(r Router) {
+			r.HandleFS("/static", os.DirFS(filepath.Join("testdata", "router", "static")))
+
 			r.HandleFunc("/hello", func(c Context) {
 				c.Text("world")
 			})
@@ -33,4 +38,14 @@ func TestNewRouter(t *testing.T) {
 	m.ServeHTTP(rw, req)
 
 	require.Equal(t, "world", rw.Body.String())
+
+	rw, req = httptest.NewRecorder(), httptest.NewRequest("GET", "/static/hello.txt", nil)
+	m.ServeHTTP(rw, req)
+
+	require.Equal(t, "hello world", rw.Body.String())
+
+	rw, req = httptest.NewRecorder(), httptest.NewRequest("GET", "/static/hello/hello.txt", nil)
+	m.ServeHTTP(rw, req)
+
+	require.Equal(t, "hello world", rw.Body.String())
 }
