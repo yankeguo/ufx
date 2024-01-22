@@ -2,6 +2,8 @@ module github.com/yankeguo/ufx
 
 go 1.20
 
+retract v0.2.1
+
 require (
 	github.com/creasty/defaults v1.7.0
 	github.com/go-logr/logr v1.4.1

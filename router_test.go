@@ -1,9 +1,10 @@
 package ufx
 
 import (
+	"net/http"
 	"net/http/httptest"
-	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -24,9 +25,9 @@ func TestNewRouter(t *testing.T) {
 			NewRouter,
 		),
 		fx.Invoke(func(r Router) {
-			r.HandleFS("/static", os.DirFS(filepath.Join("testdata", "router", "static")))
+			r.ServeMux().Handle("/", http.FileServer(http.Dir(filepath.Join("testdata", "router", "static"))))
 
-			r.HandleFunc("/hello", func(c Context) {
+			r.HandleFunc("/api/hello", func(c Context) {
 				c.Text("world")
 			})
 		}),
@@ -34,18 +35,26 @@ func TestNewRouter(t *testing.T) {
 	)
 	require.NoError(t, a.Err())
 
-	rw, req := httptest.NewRecorder(), httptest.NewRequest("GET", "/hello", nil)
+	rw, req := httptest.NewRecorder(), httptest.NewRequest("GET", "/api/hello", nil)
 	m.ServeHTTP(rw, req)
 
 	require.Equal(t, "world", rw.Body.String())
 
-	rw, req = httptest.NewRecorder(), httptest.NewRequest("GET", "/static/hello.txt", nil)
+	rw, req = httptest.NewRecorder(), httptest.NewRequest("GET", "/hello.txt", nil)
 	m.ServeHTTP(rw, req)
 
 	require.Equal(t, "hello world", rw.Body.String())
 
-	rw, req = httptest.NewRecorder(), httptest.NewRequest("GET", "/static/hello/hello.txt", nil)
+	rw, req = httptest.NewRecorder(), httptest.NewRequest("GET", "/hello/hello.txt", nil)
 	m.ServeHTTP(rw, req)
 
 	require.Equal(t, "hello world", rw.Body.String())
+
+	rw, req = httptest.NewRecorder(), httptest.NewRequest("GET", "/hello/", nil)
+	m.ServeHTTP(rw, req)
+
+	t.Log(rw.Result().Status)
+	t.Log(rw.Result().Header)
+
+	require.Equal(t, "helloworld", strings.TrimSpace(rw.Body.String()))
 }

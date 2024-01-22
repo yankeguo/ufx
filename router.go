@@ -1,10 +1,7 @@
 package ufx
 
 import (
-	"io/fs"
 	"net/http"
-	"path"
-	"strings"
 )
 
 // HandlerFunc handler func with [Context] as argument
@@ -14,7 +11,7 @@ type HandlerFunc func(c Context)
 type Router interface {
 	http.Handler
 
-	HandleFS(root string, f fs.FS)
+	ServeMux() *http.ServeMux
 
 	HandleFunc(pattern string, fn HandlerFunc)
 }
@@ -37,59 +34,12 @@ func (r *router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	r.m.ServeHTTP(w, req)
 }
 
-type wrappedFS struct {
-	root string
-	f    fs.FS
-}
-
-func newWrappedFS(root string, f fs.FS) wrappedFS {
-	root = strings.TrimSuffix(strings.TrimPrefix(root, "/"), "/")
-	if root != "" {
-		root = root + "/"
-	}
-	return wrappedFS{
-		root: root,
-		f:    f,
-	}
-}
-
-func (w wrappedFS) Open(name string) (fs.File, error) {
-	if w.root == "" {
-		return w.f.Open(name)
-	}
-	if strings.HasPrefix(name, w.root) {
-		return w.f.Open(name[len(w.root):])
-	}
-	return nil, fs.ErrNotExist
-}
-
-func (r *router) HandleFS(root string, f fs.FS) {
-	if !strings.HasSuffix(root, "/") {
-		root += "/"
-	}
-	if !strings.HasPrefix(root, "/") {
-		root += "/"
-	}
-
-	var s http.Handler
-
-	if root == "/" {
-		s = http.FileServer(http.FS(f))
-	} else {
-		s = http.FileServer(http.FS(newWrappedFS(root, f)))
-	}
-
-	fs.WalkDir(f, ".", func(p string, d fs.DirEntry, err error) error {
-		if err != nil || d.IsDir() {
-			return nil
-		}
-		r.m.Handle(path.Join(root, p), s)
-		return nil
-	})
+func (r *router) ServeMux() *http.ServeMux {
+	return r.m
 }
 
 func (r *router) HandleFunc(pattern string, fn HandlerFunc) {
-	r.m.Handle(
+	r.ServeMux().Handle(
 		pattern,
 		instrumentHTTPHandler(
 			pattern,
