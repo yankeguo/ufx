@@ -47,28 +47,11 @@ type server struct {
 	hProm http.Handler
 }
 
-func (a *server) serveReadiness(rw http.ResponseWriter, req *http.Request) {
+func (a *server) serveProbeScope(ps ProbeScope, rw http.ResponseWriter, req *http.Request) {
 	c := newContext(rw, req)
 	defer c.Perform()
 
-	s, ready := a.Readiness().Check(c)
-
-	status := http.StatusInternalServerError
-	if ready {
-		status = http.StatusOK
-	}
-
-	c.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
-
-	c.Code(status)
-	c.Text(s)
-}
-
-func (a *server) serveLiveness(rw http.ResponseWriter, req *http.Request) {
-	c := newContext(rw, req)
-	defer c.Perform()
-
-	s, ready := a.Liveness().Check(c)
+	s, ready := ps.Check(c)
 
 	status := http.StatusInternalServerError
 	if ready {
@@ -85,10 +68,10 @@ func (a *server) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	// alive, ready, metrics
 	if req.URL.Path == a.Path.Readiness {
 		// support readinessPath == livenessPath
-		a.serveReadiness(rw, req)
+		a.serveProbeScope(a.Probe.Readiness(), rw, req)
 		return
 	} else if req.URL.Path == a.Path.Liveness {
-		a.serveLiveness(rw, req)
+		a.serveProbeScope(a.Probe.Liveness(), rw, req)
 		return
 	} else if req.URL.Path == a.Path.Metrics {
 		a.hProm.ServeHTTP(rw, req)

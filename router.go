@@ -1,6 +1,7 @@
 package ufx
 
 import (
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"net/http"
 )
 
@@ -39,20 +40,18 @@ func (r *router) ServeMux() *http.ServeMux {
 }
 
 func (r *router) HandleFunc(pattern string, fn HandlerFunc) {
+	var h http.Handler = http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		c := newContext(rw, req)
+		c.loggingResponse = r.Logging.Response
+		c.loggingRequest = r.Logging.Request
+		func() {
+			defer c.Perform()
+			fn(c)
+		}()
+	})
 	r.ServeMux().Handle(
 		pattern,
-		instrumentHTTPHandler(
-			pattern,
-			http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-				c := newContext(rw, req)
-				c.loggingResponse = r.Logging.Response
-				c.loggingRequest = r.Logging.Request
-				func() {
-					defer c.Perform()
-					fn(c)
-				}()
-			}),
-		),
+		otelhttp.NewHandler(otelhttp.WithRouteTag(pattern, h), pattern),
 	)
 }
 
