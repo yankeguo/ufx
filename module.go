@@ -12,6 +12,6 @@ var Module = fx.Module(
 		NewRouter,
 		NewServer,
 	),
-	fx.Invoke(SetupOTEL),
+	fx.Invoke(SetupTelemetry),
 	fx.Invoke(func(Server) {}),
 )

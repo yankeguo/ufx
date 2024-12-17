@@ -4,21 +4,21 @@ import (
 	"context"
 	"errors"
 	"github.com/yankeguo/rg"
-	"go.uber.org/fx"
-	"time"
-
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/exporters/stdout/stdoutlog"
-	"go.opentelemetry.io/otel/exporters/stdout/stdoutmetric"
-	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	"go.opentelemetry.io/otel/log/global"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/log"
 	"go.opentelemetry.io/otel/sdk/metric"
+	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/sdk/trace"
+	"go.uber.org/fx"
+	"time"
 )
 
-func SetupOTEL(lc fx.Lifecycle) (err error) {
+func SetupTelemetry(lc fx.Lifecycle) (err error) {
 	defer rg.Guard(&err)
 
 	var (
@@ -56,30 +56,46 @@ func SetupOTEL(lc fx.Lifecycle) (err error) {
 		},
 	})
 
-	// Set up propagator.
+	ctx := context.Background()
+
+	res := rg.Must(resource.New(
+		ctx,
+		resource.WithFromEnv(),
+		resource.WithTelemetrySDK(),
+		resource.WithProcess(),
+		resource.WithOS(),
+		resource.WithContainer(),
+		resource.WithHost(),
+	))
+
 	propagator = propagation.NewCompositeTextMapPropagator(
 		propagation.TraceContext{},
 		propagation.Baggage{},
 	)
 	otel.SetTextMapPropagator(propagator)
 
-	// Set up trace provider.
-	traceExporter = rg.Must(stdouttrace.New(stdouttrace.WithPrettyPrint()))
-	traceProvider = trace.NewTracerProvider(trace.WithBatcher(traceExporter, trace.WithBatchTimeout(time.Second)))
+	traceExporter = rg.Must(otlptracehttp.New(ctx))
+	traceProvider = trace.NewTracerProvider(
+		trace.WithBatcher(traceExporter,
+			trace.WithBatchTimeout(time.Second),
+		),
+		trace.WithResource(res),
+	)
 	otel.SetTracerProvider(traceProvider)
 
-	// Set up meter provider.
-	metricExporter = rg.Must(stdoutmetric.New())
+	metricExporter = rg.Must(otlpmetrichttp.New(ctx))
 	metricProvider = metric.NewMeterProvider(
 		metric.WithReader(metric.NewPeriodicReader(metricExporter,
-			metric.WithInterval(3*time.Second))),
+			metric.WithInterval(3*time.Second)),
+		),
+		metric.WithResource(res),
 	)
 	otel.SetMeterProvider(metricProvider)
 
-	// Set up logger provider.
 	loggerExporter = rg.Must(stdoutlog.New())
 	loggerProvider = log.NewLoggerProvider(
 		log.WithProcessor(log.NewBatchProcessor(loggerExporter)),
+		log.WithResource(res),
 	)
 	global.SetLoggerProvider(loggerProvider)
 	return
