@@ -8,8 +8,8 @@ import (
 
 type CheckerFunc func(ctx context.Context) error
 
-// Prober is a check prober
-type Prober interface {
+// Probe is a check probe
+type Probe interface {
 	// CheckLiveness check liveness
 	CheckLiveness() bool
 
@@ -20,36 +20,36 @@ type Prober interface {
 	AddChecker(name string, fn CheckerFunc)
 }
 
-type proberItem struct {
+type probeItem struct {
 	name string
 	fn   CheckerFunc
 }
 
-type ProberParams struct {
+type ProbeParams struct {
 	Readiness struct {
 		Cascade int `json:"cascade" default:"5" validate:"min=1"`
 	} `json:"readiness"`
 }
 
-func ProberParamsFromConf(conf Conf) (params ProberParams, err error) {
-	err = conf.Bind(&params, "prober")
+func ProbeParamsFromConf(conf Conf) (params ProbeParams, err error) {
+	err = conf.Bind(&params, "probe")
 	return
 }
 
-type prober struct {
-	ProberParams
+type probe struct {
+	ProbeParams
 
-	checkers []proberItem
+	checkers []probeItem
 	failed   int64
 }
 
-func NewProber(params ProberParams) Prober {
-	return &prober{
-		ProberParams: params,
+func NewProbe(params ProbeParams) Probe {
+	return &probe{
+		ProbeParams: params,
 	}
 }
 
-func (m *prober) CheckLiveness() bool {
+func (m *probe) CheckLiveness() bool {
 	if m.Readiness.Cascade > 0 {
 		return m.failed < int64(m.Readiness.Cascade)
 	} else {
@@ -57,7 +57,7 @@ func (m *prober) CheckLiveness() bool {
 	}
 }
 
-func (m *prober) CheckReadiness(ctx context.Context) (result string, ready bool) {
+func (m *probe) CheckReadiness(ctx context.Context) (result string, ready bool) {
 	var results []string
 
 	ready = true
@@ -85,6 +85,6 @@ func (m *prober) CheckReadiness(ctx context.Context) (result string, ready bool)
 	return
 }
 
-func (m *prober) AddChecker(name string, fn CheckerFunc) {
-	m.checkers = append(m.checkers, proberItem{name: name, fn: fn})
+func (m *probe) AddChecker(name string, fn CheckerFunc) {
+	m.checkers = append(m.checkers, probeItem{name: name, fn: fn})
 }

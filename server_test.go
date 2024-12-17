@@ -18,10 +18,10 @@ func TestNewApp(t *testing.T) {
 	a := fx.New(
 		fx.Supply(r, Conf{}),
 		fx.Provide(
-			ProberParamsFromConf,
+			ProbeParamsFromConf,
 			RouterParamsFromConf,
 			ServerParamsFromConf,
-			NewProber,
+			NewProbe,
 			NewRouter,
 			NewServer,
 		),
@@ -30,7 +30,7 @@ func TestNewApp(t *testing.T) {
 				c.Text("world")
 			})
 		}),
-		fx.Invoke(func(v Prober) {
+		fx.Invoke(func(v Probe) {
 			v.AddChecker("hello", func(ctx context.Context) error {
 				return errors.New("bad")
 			})

@@ -41,7 +41,7 @@ type Server interface {
 type server struct {
 	ServerParams
 
-	Prober
+	Probe
 	Router
 
 	hProm http.Handler
@@ -108,7 +108,7 @@ type ServerOptions struct {
 	fx.Lifecycle
 
 	ServerParams
-	Prober
+	Probe
 	Router
 }
 
@@ -116,7 +116,7 @@ type ServerOptions struct {
 func NewServer(opts ServerOptions) Server {
 	a := &server{
 		ServerParams: opts.ServerParams,
-		Prober:       opts.Prober,
+		Probe:        opts.Probe,
 		Router:       opts.Router,
 		hProm:        promhttp.Handler(),
 	}
