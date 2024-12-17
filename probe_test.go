@@ -33,7 +33,7 @@ func TestAsCheckerBuilder(t *testing.T) {
 			NewProbe,
 		),
 		fx.Invoke(func(v Probe) {
-			v.AddChecker("redis", func(ctx context.Context) error {
+			v.Readiness().Add("redis", func(ctx context.Context) error {
 				if bad {
 					return errors.New("test")
 				}
@@ -43,22 +43,32 @@ func TestAsCheckerBuilder(t *testing.T) {
 		fx.Populate(&m),
 	)
 
-	require.True(t, m.CheckLiveness())
+	ctx := context.Background()
 
-	s, ready := m.CheckReadiness(context.Background())
+	_, ok := m.Liveness().Check(ctx)
+
+	require.True(t, ok)
+
+	s, ready := m.Readiness().Check(context.Background())
 	require.False(t, ready)
 	require.Equal(t, "redis: test", s)
-	require.True(t, m.CheckLiveness())
 
-	s, ready = m.CheckReadiness(context.Background())
+	_, ok = m.Liveness().Check(ctx)
+	require.True(t, ok)
+
+	s, ready = m.Readiness().Check(context.Background())
 	require.False(t, ready)
 	require.Equal(t, "redis: test", s)
-	require.False(t, m.CheckLiveness())
+
+	_, ok = m.Liveness().Check(ctx)
+	require.False(t, ok)
 
 	bad = false
 
-	s, ready = m.CheckReadiness(context.Background())
+	s, ready = m.Readiness().Check(context.Background())
 	require.True(t, ready)
 	require.Equal(t, "redis: OK", s)
-	require.True(t, m.CheckLiveness())
+
+	_, ok = m.Liveness().Check(ctx)
+	require.True(t, ok)
 }

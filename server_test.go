@@ -31,7 +31,7 @@ func TestNewApp(t *testing.T) {
 			})
 		}),
 		fx.Invoke(func(v Probe) {
-			v.AddChecker("hello", func(ctx context.Context) error {
+			v.Readiness().Add("hello", func(ctx context.Context) error {
 				return errors.New("bad")
 			})
 		}),

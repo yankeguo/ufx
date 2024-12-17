@@ -51,7 +51,7 @@ func (a *server) serveReadiness(rw http.ResponseWriter, req *http.Request) {
 	c := newContext(rw, req)
 	defer c.Perform()
 
-	s, ready := a.CheckReadiness(c)
+	s, ready := a.Readiness().Check(c)
 
 	status := http.StatusInternalServerError
 	if ready {
@@ -68,15 +68,17 @@ func (a *server) serveLiveness(rw http.ResponseWriter, req *http.Request) {
 	c := newContext(rw, req)
 	defer c.Perform()
 
+	s, ready := a.Liveness().Check(c)
+
+	status := http.StatusInternalServerError
+	if ready {
+		status = http.StatusOK
+	}
+
 	c.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 
-	if a.CheckLiveness() {
-		c.Code(http.StatusOK)
-		c.Text("OK")
-	} else {
-		c.Code(http.StatusInternalServerError)
-		c.Text("CASCADED FAILURE")
-	}
+	c.Code(status)
+	c.Text(s)
 }
 
 func (a *server) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
