@@ -3,19 +3,20 @@ package ufx
 import (
 	"encoding/json"
 	"errors"
+	"os"
+	"strings"
+
 	"github.com/creasty/defaults"
 	"github.com/go-playground/validator/v10"
 	"go.uber.org/fx"
 	"gopkg.in/yaml.v3"
-	"os"
-	"strings"
 )
 
 // Conf is the configuration type
 type Conf map[string]any
 
 // Bind binds the configuration to the given data structure, supports json tags
-func (c Conf) Bind(data interface{}, keys ...string) (err error) {
+func (c Conf) Bind(data any, keys ...string) (err error) {
 	m := map[string]any(c)
 
 	for _, key := range keys {
@@ -23,11 +24,11 @@ func (c Conf) Bind(data interface{}, keys ...string) (err error) {
 			m = map[string]any{}
 			break
 		} else {
-			switch v.(type) {
+			switch v := v.(type) {
 			case map[string]any:
-				m = v.(map[string]any)
+				m = v
 			case Conf:
-				m = v.(Conf)
+				m = v
 			default:
 				err = errors.New("ufx.Conf#Bind: invalid key: " + strings.Join(keys, "."))
 				return

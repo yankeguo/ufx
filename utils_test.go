@@ -32,7 +32,7 @@ func TestExtractRequest(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(
 		t,
-		map[string]interface{}{
+		map[string]any{
 			"aaa":               "bbb",
 			"aaa_array":         []string{"bbb"},
 			"header_host":       "example.com",
@@ -52,7 +52,7 @@ func TestExtractRequest(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(
 		t,
-		map[string]interface{}{
+		map[string]any{
 			"aaa":                       "bbb",
 			"aaa_array":                 []string{"bbb"},
 			"content_type":              "application/json;charset=utf-8",
@@ -77,7 +77,7 @@ func TestExtractRequest(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(
 		t,
-		map[string]interface{}{
+		map[string]any{
 			"aaa":                       "bbb",
 			"aaa_array":                 []string{"bbb"},
 			"content_type":              "application/x-www-form-urlencoded;charset=utf-8",
@@ -105,7 +105,7 @@ func TestExtractRequest(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(
 		t,
-		map[string]interface{}{
+		map[string]any{
 			"aaa":                       "bbb",
 			"aaa_array":                 []string{"bbb"},
 			"body":                      "hello=world",
@@ -130,7 +130,7 @@ func TestExtractRequest(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(
 		t,
-		map[string]interface{}{
+		map[string]any{
 			"aaa":                       "bbb",
 			"aaa_array":                 []string{"bbb"},
 			"body":                      []uint8{0x68, 0x65, 0x6c, 0x6c, 0x6f, 0x3d, 0x77, 0x6f, 0x72, 0x6c, 0x64},

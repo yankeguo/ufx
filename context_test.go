@@ -1,10 +1,11 @@
 package ufx
 
 import (
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 /*
@@ -76,9 +77,6 @@ func TestContextPanic(t *testing.T) {
 		require.Equal(t, "bbb", r.AAA)
 
 		panic("WWW")
-
-		ctx.Code(http.StatusTeapot)
-		ctx.Text("OK")
 	}()
 
 	rw.Flush()

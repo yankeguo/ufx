@@ -2,12 +2,13 @@ package ufx
 
 import (
 	"context"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"go.uber.org/fx"
 	"net/http"
 	_ "net/http/pprof"
 	"strings"
 	"time"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.uber.org/fx"
 )
 
 // ServerParams params
@@ -66,14 +67,15 @@ func (a *server) serveProbeScope(ps ProbeScope, rw http.ResponseWriter, req *htt
 
 func (a *server) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	// alive, ready, metrics
-	if req.URL.Path == a.Path.Readiness {
+	switch req.URL.Path {
+	case a.Path.Readiness:
 		// support readinessPath == livenessPath
 		a.serveProbeScope(a.Probe.Readiness(), rw, req)
 		return
-	} else if req.URL.Path == a.Path.Liveness {
+	case a.Path.Liveness:
 		a.serveProbeScope(a.Probe.Liveness(), rw, req)
 		return
-	} else if req.URL.Path == a.Path.Metrics {
+	case a.Path.Metrics:
 		a.hProm.ServeHTTP(rw, req)
 		return
 	}

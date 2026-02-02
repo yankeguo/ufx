@@ -55,7 +55,7 @@ type Context interface {
 	// HTTP query is prefixed with "query_"
 	//
 	// both JSON and Form are supported
-	Bind(data interface{})
+	Bind(data any)
 
 	// Files returns the multipart file headers
 	Files() map[string][]*multipart.FileHeader
@@ -70,7 +70,7 @@ type Context interface {
 	Text(s string)
 
 	// JSON set the response body to json
-	JSON(data interface{})
+	JSON(data any)
 
 	// Perform actually perform the response
 	// it is suggested to use in defer, recover() is included to recover from any panics
@@ -153,7 +153,7 @@ func (c *winterContext) send() {
 	_, _ = c.rw.Write(c.body)
 }
 
-func (c *winterContext) Bind(data interface{}) {
+func (c *winterContext) Bind(data any) {
 	c.recvOnce.Do(c.receive)
 	if err := json.Unmarshal(c.buf, data); err != nil {
 		halt.Error(err, halt.WithStatusCode(http.StatusBadRequest))
@@ -180,7 +180,7 @@ func (c *winterContext) Text(s string) {
 	c.Body(ContentTypeTextPlainUTF8, []byte(s))
 }
 
-func (c *winterContext) JSON(data interface{}) {
+func (c *winterContext) JSON(data any) {
 	if buf, err := json.Marshal(data); err != nil {
 		halt.Error(err, halt.WithStatusCode(http.StatusBadRequest))
 	} else {

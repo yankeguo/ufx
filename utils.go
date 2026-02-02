@@ -3,6 +3,7 @@ package ufx
 import (
 	"encoding/json"
 	"io"
+	"maps"
 	"mime"
 	"mime/multipart"
 	"net/http"
@@ -65,9 +66,7 @@ func extractRequest(out map[string]any, fOut map[string][]*multipart.FileHeader,
 		if err = json.Unmarshal(buf, &data); err != nil {
 			return
 		}
-		for key, val := range data {
-			out[key] = val
-		}
+		maps.Copy(out, data)
 	case ContentTypeFormURLEncoded:
 		var query url.Values
 		if query, err = url.ParseQuery(string(buf)); err != nil {
@@ -83,9 +82,7 @@ func extractRequest(out map[string]any, fOut map[string][]*multipart.FileHeader,
 		for key, vals := range req.MultipartForm.Value {
 			extractStringSlice(out, "form_", key, vals)
 		}
-		for key, file := range req.MultipartForm.File {
-			fOut[key] = file
-		}
+		maps.Copy(fOut, req.MultipartForm.File)
 	default:
 		out["body"] = buf
 		return
